@@ -13,7 +13,7 @@ export const useUserQuery = (num) => {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     cacheTime: 1000 * 5,
-    staleTime: 1000 * 0,
+    staleTime: 1000 * 10,
   });
 };
 
