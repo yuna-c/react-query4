@@ -7,10 +7,10 @@ export default function Menu() {
         <Link to="/">Main</Link>
       </li>
       <li>
-        <Link to="/">Main</Link>
+        <Link to="/name">User Name</Link>
       </li>
       <li>
-        <Link to="/">Main</Link>
+        <Link to="/address">User Address</Link>
       </li>
     </ul>
   );
