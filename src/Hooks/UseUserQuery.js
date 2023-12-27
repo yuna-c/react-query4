@@ -15,8 +15,11 @@ export const useUserQuery = (num) => {
     //배열(num) 지정 쿼리키로 받아온 배열에서 use값으로 전달 가능
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    cacheTime: 1000 * 5,
-    staleTime: 1000 * 10,
+    //5초
+    cacheTime: 1000 * 5, //inactive가 된 상태에서 얼마 동안 데이터를 캐시에 유지 시킬지에 대한 시간 정보
+    // 해당 데이터를 컴포넌트에서 활용하지 않더라도 얼마동안 gc(가비지컬렉터)에 의한 데이터 삭제를 막는 시간 값 설정
+    staleTime: 1000 * 5, //비동기 서버 데이터를 fetching한 순간부터 언제까지 최신데이터로 인지 시키면서 cacheTime을 소진시키지 않을 지에 대한 시간 값
+    // 얼마동안 refetching을 하지 않을지에 대한 시간 값 설정
   });
 };
 
