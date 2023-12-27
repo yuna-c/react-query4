@@ -6,12 +6,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
   inactive: 서버데이터가 더이상 해당 컴포넌트에서 활용되지 않는 상태
   cacheTime: inactive상태에서 얼마까지 데이터를 유지시킬지에 대한 시간값 (default: 1000 * 60 * 5ms 5분)
   statleTime: 처음 dataFetching후 얼마뒤에 fresh -> stale로 변경할지에 대한 시간값 (default: 0ms)
+  queryKey : 고유 인자값
 */
 
 // 데이터 목록 호출 함수
 const fetchUser = async ({ queryKey }) => {
   console.log(queryKey);
-  const response = await fetch(`https://jsonplaceholder.typicode.com/users/`);
+  const response = await fetch(`https://jsonplaceholder.typicode.com/users`);
   return await response.json();
 };
 
@@ -26,9 +27,9 @@ export const useUserQuery = () => {
 };
 
 //
-const deleteUser = async ({ queryKey }) => {
+const deleteUser = async (num) => {
   const response = await fetch(
-    `https://jsonplaceholder.typicode.com/users/${queryKey[1]}`,
+    `https://jsonplaceholder.typicode.com/users/${num[1]}`,
     {
       method: "DELETE",
     }
