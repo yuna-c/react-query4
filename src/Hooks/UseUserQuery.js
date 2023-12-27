@@ -1,27 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-
-const fetchUser = async ({ queryKey }) => {
-  console.log(queryKey);
-  const response = await fetch(
-    `https://jsonplaceholder.typicode.com/users/${queryKey[1]}`
-  );
-  return await response.json();
-};
-
-export const useUserQuery = (num) => {
-  // useQuery에 첫번째 인수로 넣는 값은 무조건 fetching함수에 전달됨
-  // useQuery에서는 queryKey가 동일하면 같은 데이터라고 인지하기 때문에 refetching 처리 안함
-  return useQuery(["users", num], fetchUser, {
-    //배열(num) 지정 쿼리키로 받아온 배열에서 use값으로 전달 가능
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    //5초
-    cacheTime: 1000 * 5, //inactive가 된 상태에서 얼마 동안 데이터를 캐시에 유지 시킬지에 대한 시간 정보
-    // 해당 데이터를 컴포넌트에서 활용하지 않더라도 얼마동안 gc(가비지컬렉터)에 의한 데이터 삭제를 막는 시간 값 설정
-    staleTime: 1000 * 5, //비동기 서버 데이터를 fetching한 순간부터 언제까지 최신데이터로 인지 시키면서 cacheTime을 소진시키지 않을 지에 대한 시간 값
-    // 얼마동안 refetching을 하지 않을지에 대한 시간 값 설정
-  });
-};
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /*
   fresh: 서버데이터를 최신으로 인식하는 상태 (refetch 필요없는 상태)
@@ -30,3 +7,48 @@ export const useUserQuery = (num) => {
   cacheTime: inactive상태에서 얼마까지 데이터를 유지시킬지에 대한 시간값 (default: 1000 * 60 * 5ms 5분)
   statleTime: 처음 dataFetching후 얼마뒤에 fresh -> stale로 변경할지에 대한 시간값 (default: 0ms)
 */
+
+// 데이터 목록 호출 함수
+const fetchUser = async ({ queryKey }) => {
+  console.log(queryKey);
+  const response = await fetch(`https://jsonplaceholder.typicode.com/users/`);
+  return await response.json();
+};
+
+// 데이터 목록 호출 커스텀 훅
+export const useUserQuery = () => {
+  return useQuery(["users"], fetchUser, {
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    cacheTime: 1000 * 20,
+    staleTime: 1000 * 0,
+  });
+};
+
+//
+const deleteUser = async ({ queryKey }) => {
+  const response = await fetch(
+    `https://jsonplaceholder.typicode.com/users/${queryKey[1]}`,
+    {
+      method: "DELETE",
+    }
+  );
+  return await response.json();
+};
+
+// 인수로 순번을 받아서 해당 순번의 서버 데이터를 삭제하는 커스텀 훅(useMutation)
+export const useDeleteQuery = () => {
+  // 기존 생성한 queryClient 인스턴스를 호출
+  // 해당 queryClient 인스턴스에서 활용할 수 있는  prototype method인 setQueryData라는 서버 데이터 변경요청 값을 등록하는 함수
+  const queryClient = useQueryClient();
+  // useMutation(비동기 데이터 변경 함수, 옵션 설정 객체{onSuccess: mutate요청이 성공적으로 수행되면 연결될 핸들러 함수})
+  // useMutation훅이 deleteUser라는 내부 fetching함수를 호출해서 서버 데이터를 변경 요청
+  return useMutation(deleteUser, {
+    // 서버 데이터 변경이 성공하면 변경된 서버 데이터 값을 다시 고유의 쿼리키로 등록해서 react-query로 비동기 데이터 관리
+    onSuccess: (args) => {
+      // args 데이터값 인자
+      // 변경되면 새로운 고유 쿼리키를 만들어서 users의,1(id), blabla~ (수정,삭제,업데이트)
+      queryClient.setQueryData(["users", args.id], args);
+    },
+  });
+};
